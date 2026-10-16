@@ -10,6 +10,7 @@ const state = {
   shapeQuery: "",
   focus: null,
   focusQuery: "",
+  interpretations: null,
 };
 
 const el = (id) => document.getElementById(id);
@@ -39,6 +40,7 @@ async function api(path, options = {}) {
   if (url.pathname === "/api/meta") return publicSnapshot.meta;
   if (url.pathname === "/api/shapes") return publicSnapshot.shapes;
   if (url.pathname === "/api/focus") return publicSnapshot.focus;
+  if (url.pathname === "/api/interpretations") return publicSnapshot.interpretations;
   if (url.pathname === "/api/cases") {
     const keyword = (url.searchParams.get("q") || "").toLocaleLowerCase();
     const persona = url.searchParams.get("persona") || "";
@@ -105,6 +107,13 @@ function focusMarkup(profile, { compact = false } = {}) {
   </div>`;
 }
 
+function interpretationMarkup(profile, { compact = false } = {}) {
+  if (!profile) return "";
+  const concern = `<span class="interpretation-chip"><b>核心关切</b>${escapeHtml(profile.关切判断)}</span>`;
+  const meaning = `<span class="interpretation-chip meaning-chip"><b>${profile.赋义 === "not_applicable" ? "作者赋义" : "赋义方式"}</b>${escapeHtml(profile.赋义判断)}</span>`;
+  return `<div class="interpretation-profile ${compact ? "interpretation-compact" : ""}">${concern}${meaning}</div>`;
+}
+
 function renderList() {
   const persona = state.meta.personas.find((item) => item.persona_id === state.persona);
   el("listTitle").textContent = persona ? persona.persona_name : "旅程目录";
@@ -119,6 +128,7 @@ function renderList() {
       <div class="card-top"><span class="case-code">${escapeHtml(item.case_id)}${item.has_narrative_version ? " · 双版本对比" : ""}</span><span class="case-persona">${escapeHtml(item.source_type === "公开资料约束的模拟案例" ? "模拟案例" : item.persona_name)}</span></div>
       <h3>${escapeHtml(item.chapter_title)}</h3>
       <p>${escapeHtml(item.chapter_summary)}</p>
+      ${interpretationMarkup(item.interpretation_profile, { compact: true })}
       ${focusMarkup(item.focus_profile, { compact: true })}
       <div class="card-bottom"><span>${escapeHtml(item.scene)}</span><strong>${item.event_count} 个行动节点 <span class="card-arrow" aria-hidden="true">↗</span></strong></div>
     </a>`).join("");
@@ -201,6 +211,15 @@ function renderDetail(item) {
     <div class="timeline">${item.events.map(eventMarkup).join("")}</div>
     <button type="button" class="add-event-button" data-action="add-event">＋ 添加行动节点</button>`;
   const asideContent = `
+    <section class="info-card interpretation-detail-card"><h3>这一天在意什么，怎样回望</h3>
+      ${interpretationMarkup(item.interpretation_profile)}
+      ${item.interpretation_profile ? `<dl>
+        <div><dt>关切依据与性质</dt><dd>${escapeHtml(item.interpretation_profile.关切依据)}<br>${escapeHtml(item.interpretation_profile.关切性质)}</dd></div>
+        <div><dt>赋义依据与性质</dt><dd>${escapeHtml(item.interpretation_profile.赋义依据)}<br>${escapeHtml(item.interpretation_profile.赋义性质)}</dd></div>
+        <div><dt>备选读法与边界</dt><dd>${escapeHtml(item.interpretation_profile.备选读法)}</dd></div>
+      </dl>` : `<p>此案例尚未进行关切与赋义分析。</p>`}
+      <a href="#interpretations" class="focus-method-link">查看类型目录与编码规则 ↗</a>
+    </section>
     <section class="info-card focus-detail-card"><h3>叙事关注对象</h3>
       ${focusMarkup(item.focus_profile)}
       <p class="focus-method-short">百分比按原始时间轴的行动描述文字估算；同一行动涉及多个对象时等分。它不代表游玩时间。</p>
@@ -256,6 +275,7 @@ async function showCase(caseId) {
   el("detail").hidden = false;
   el("shapeLibrary").hidden = true;
   el("focusLibrary").hidden = true;
+  el("interpretationLibrary").hidden = true;
   renderDetail(item);
   window.scrollTo({ top: 0, behavior: "instant" });
 }
@@ -315,6 +335,7 @@ async function showShapeLibrary() {
   el("detail").hidden = true;
   el("shapeLibrary").hidden = false;
   el("focusLibrary").hidden = true;
+  el("interpretationLibrary").hidden = true;
   el("breadcrumb").textContent = "行动形状库";
   el("shapeLibraryLink").classList.add("active");
   renderShapeLibrary();
@@ -368,21 +389,61 @@ async function showFocusLibrary() {
   el("detail").hidden = true;
   el("shapeLibrary").hidden = true;
   el("focusLibrary").hidden = false;
+  el("interpretationLibrary").hidden = true;
   el("breadcrumb").textContent = "叙事关注对象总表";
   el("focusLibraryLink").classList.add("active");
   renderFocusLibrary();
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
+function renderInterpretationLibrary() {
+  const data = state.interpretations;
+  const group = (title, items, note) => `<section class="interpretation-group">
+    <div class="shape-group-head"><h2>${escapeHtml(title)}</h2><span>${items.length} 种当前取值</span></div>
+    <p class="interpretation-group-note">${escapeHtml(note)}</p>
+    <div class="interpretation-grid">${items.map((item) => `<article class="interpretation-type">
+      <div class="interpretation-type-top"><h3>${escapeHtml(item.名称)}</h3><span>${item.案例.length} 例主标签</span></div>
+      <p>${escapeHtml(item.定义)}</p>
+      <div class="interpretation-case-links">${item.案例.map((row) => `<a href="#case/${escapeHtml(row.id)}">${escapeHtml(row.id)} ↗</a>`).join("") || "本库暂无主标签案例"}</div>
+    </article>`).join("")}</div>
+  </section>`;
+  el("interpretationLibrary").innerHTML = `<div class="focus-hero">
+    <span class="eyebrow">${data.case_count} 条旅程 · 逐例阅读</span><h1>核心关切与作者赋义方式</h1>
+    <p>核心关切回答“这一天主要在意什么”；赋义方式回答“作者后来怎样解释或评价”。前者可由多项行动归纳，后者必须核对作者表述。两者都不是叙述篇幅百分比。</p>
+  </div><section class="focus-method"><h2>怎样编码</h2><p>${escapeHtml(data.method)}</p>
+    <details><summary>展开证据边界</summary><ul>${data.rules.map((rule) => `<li>${escapeHtml(rule)}</li>`).join("")}</ul></details></section>
+    ${group("核心关切", data.concerns, "每例一个主要关切；次要关切和逐例依据在案例详情中。")}
+    ${group("作者赋义方式", data.meanings, "标签描述本日可支持的评价方式，不代表作者的长期改变。")}`;
+}
+
+async function showInterpretationLibrary() {
+  state.interpretations = await api("/api/interpretations");
+  state.current = null;
+  el("overview").hidden = true;
+  el("detail").hidden = true;
+  el("shapeLibrary").hidden = true;
+  el("focusLibrary").hidden = true;
+  el("interpretationLibrary").hidden = false;
+  el("breadcrumb").textContent = "关切与赋义方式";
+  el("interpretationLibraryLink").classList.add("active");
+  renderInterpretationLibrary();
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
 async function route() {
   el("shapeLibraryLink").classList.remove("active");
   el("focusLibraryLink").classList.remove("active");
+  el("interpretationLibraryLink").classList.remove("active");
   if (location.hash === "#shapes") {
     await showShapeLibrary();
     return;
   }
   if (location.hash === "#focus") {
     await showFocusLibrary();
+    return;
+  }
+  if (location.hash === "#interpretations") {
+    await showInterpretationLibrary();
     return;
   }
   const match = /^#case\/([A-Za-z0-9-]+)$/.exec(location.hash);
@@ -394,6 +455,7 @@ async function route() {
     el("detail").hidden = true;
     el("shapeLibrary").hidden = true;
     el("focusLibrary").hidden = true;
+    el("interpretationLibrary").hidden = true;
     el("overview").hidden = false;
     renderList();
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -633,6 +695,14 @@ start().catch((error) => {
     el("focusLibrary").hidden = false;
     el("breadcrumb").textContent = "叙事关注对象总表";
     el("focusLibrary").innerHTML = `<div class="empty-state"><h3>暂时无法读取叙事关注对象总表</h3><p>${escapeHtml(error.message)}</p></div>`;
+  } else if (location.hash === "#interpretations") {
+    el("overview").hidden = true;
+    el("detail").hidden = true;
+    el("shapeLibrary").hidden = true;
+    el("focusLibrary").hidden = true;
+    el("interpretationLibrary").hidden = false;
+    el("breadcrumb").textContent = "关切与赋义方式";
+    el("interpretationLibrary").innerHTML = `<div class="empty-state"><h3>暂时无法读取关切与赋义方式</h3><p>${escapeHtml(error.message)}</p></div>`;
   } else {
     el("caseList").innerHTML = `<div class="empty-state"><h3>无法读取旅程数据库</h3><p>${escapeHtml(error.message)}</p></div>`;
   }

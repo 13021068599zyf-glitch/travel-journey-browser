@@ -280,6 +280,27 @@ h1 em{font-style:normal;color:var(--sea)}
 @media(max-width:850px){.sidebar{overflow-y:visible}.library-link{display:inline-grid;vertical-align:top;margin:8px 6px 0}.library-link + .library-link{margin-top:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
 
+.interpretation-profile{display:grid;gap:7px;margin:14px 0}
+.interpretation-chip{display:block;background:#eaf5f3;border-left:3px solid #418e88;border-radius:5px;padding:7px 9px;color:#284b55;font-size:11px;line-height:1.55}
+.interpretation-chip b{display:block;color:#316e6d;font-size:10px;letter-spacing:.05em;margin-bottom:2px}
+.interpretation-chip.meaning-chip{background:#fff5eb;border-left-color:#bc855c;color:#654a3e}
+.interpretation-chip.meaning-chip b{color:#9b6845}
+.interpretation-compact{margin:12px 0 2px;gap:5px}
+.interpretation-compact .interpretation-chip{font-size:10px;padding:6px 8px}
+.interpretation-detail-card .interpretation-profile{margin:0 0 17px}
+.interpretation-detail-card .focus-method-link{display:inline-block;margin-top:14px;font-size:11px}
+.interpretation-group{padding:28px 0 10px}
+.interpretation-group-note{color:var(--muted);font-size:12px;line-height:1.7;margin:4px 0 16px}
+.interpretation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.interpretation-type{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:18px 20px}
+.interpretation-type-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.interpretation-type h3{font-family:var(--display);font-size:18px;line-height:1.35;margin:0;color:var(--ink-deep)}
+.interpretation-type-top span{flex:none;color:#69818b;font-size:10px}
+.interpretation-type p{color:var(--muted);font-size:12px;line-height:1.7;margin:9px 0 12px}
+.interpretation-case-links{display:flex;gap:6px;flex-wrap:wrap}
+.interpretation-case-links a{color:var(--sea);background:#edf6f5;text-decoration:none;border-radius:4px;padding:4px 6px;font-size:10px;font-weight:700}
+@media(max-width:850px){.interpretation-grid{grid-template-columns:1fr}}
+
 /* 公开浏览版只展示阅读与检索操作。 */
 body.public-readonly .top-actions,
 body.public-readonly .event-actions,
