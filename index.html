@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#18364b">
+  <title>旅程档案 · Nexleap</title>
+  <meta name="description" content="浏览有来源关联的单日旅行用户旅程时间线。">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body class="public-readonly">
+  <div class="shell">
+    <aside class="sidebar" aria-label="旅程导航">
+      <a class="brand" href="#" aria-label="返回旅程总览">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span><strong>旅程档案</strong><small>NEXLEAP · 旅行研究</small></span>
+      </a>
+      <div class="side-intro">
+        <span class="eyebrow">案例浏览器</span>
+        <p>沿着一个人的选择，读完一段旅程。</p>
+      </div>
+      <div class="side-rule"></div>
+      <a class="library-link" id="shapeLibraryLink" href="#shapes"><span>◇</span><strong>行动形状库</strong><small>路径 · 节奏 · 调整 · 同行</small></a>
+      <a class="library-link" id="focusLibraryLink" href="#focus"><span>◎</span><strong>叙事关注对象总表</strong><small>写了谁 · 看了什么 · 写了多少</small></a>
+      <div class="filter-heading"><span>按场景浏览</span><button id="clearFilter" type="button">查看全部</button></div>
+      <nav id="personaNav" class="persona-nav" aria-label="场景画像"></nav>
+      <div class="side-footer">
+        <div class="side-stat"><strong id="totalCount">—</strong><span>条旅程</span></div>
+        <div class="side-stat"><strong id="eventCount">—</strong><span>个行动节点</span></div>
+        <p>本库含公开作者自述整理与三条资料约束的模拟案例。具体行动与时刻请查看每条来源。</p>
+      </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <header class="topbar">
+        <div class="breadcrumb"><span class="breadcrumb-line"></span><span id="breadcrumb">全部旅程</span></div>
+        <div class="public-badge">公开只读版</div><div class="top-actions">
+          <button class="text-button" id="addSourceButton" type="button">＋ 添加来源</button>
+          <button class="primary-button" id="addCaseButton" type="button">＋ 新建旅程</button>
+        </div>
+      </header>
+
+      <section id="overview" class="overview" aria-labelledby="pageTitle">
+        <div class="hero">
+          <div>
+            <span class="eyebrow hero-eyebrow">旅行体验 · 行动 · 证据</span>
+            <h1 id="pageTitle">把旅程读成<br><em>一个人的行动。</em></h1>
+            <p>每条案例只串联同一日内的目标、转场、选择和结果。时间只写到来源能够支持的精度。</p>
+          </div>
+          <div class="hero-route" aria-hidden="true">
+            <span class="route-point p1"></span><span class="route-point p2"></span><span class="route-point p3"></span>
+            <span class="route-path"></span>
+            <span class="route-caption">一段经历 · 一条可追溯的路线</span>
+          </div>
+        </div>
+        <div class="list-toolbar">
+          <div class="list-intro"><h2 id="listTitle">旅程目录</h2><span id="resultCount">—</span></div>
+          <label class="search-field">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <span class="sr-only">搜索旅程</span>
+            <input id="searchInput" type="search" placeholder="搜索地点、行动或案例编号" autocomplete="off">
+          </label>
+        </div>
+        <div id="caseList" class="case-list" aria-live="polite"></div>
+      </section>
+
+      <section id="detail" class="detail" aria-label="旅程详情" hidden></section>
+      <section id="shapeLibrary" class="shape-library" aria-label="行动形状库" hidden></section>
+      <section id="focusLibrary" class="focus-library" aria-label="叙事关注对象总表" hidden></section>
+    </main>
+  </div>
+
+  <dialog id="formDialog" class="form-dialog" aria-labelledby="dialogTitle">
+    <form id="editorForm" method="dialog">
+      <div class="dialog-top"><div><span class="eyebrow" id="dialogEyebrow">内容编辑</span><h2 id="dialogTitle">编辑旅程</h2></div><button class="icon-button" type="button" id="closeDialog" aria-label="关闭">×</button></div>
+      <div id="formFields" class="form-fields"></div>
+      <div class="dialog-actions"><button type="button" class="quiet-button" id="cancelDialog">取消</button><button type="submit" class="primary-button">保存</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
